@@ -21,23 +21,18 @@ const auditIncludes = [
   },
 ];
 
+interface PlatformAnalysis {
+  platform: string;
+  username: string;
+  icon: string;
+  score: number;
+  issues: string[];
+  recommendations: string[];
+}
+
 interface AuditResult {
   overall_score: number;
-  platforms: {
-    twitter?: {
-      platform: string;
-      username: string;
-      score: number;
-      issues: string[];
-      recommendations: string[];
-    };
-    linkedin?: {
-      platform: string;
-      score: number;
-      issues: string[];
-      recommendations: string[];
-    };
-  };
+  platforms: Record<string, PlatformAnalysis>;
   recommendations: string[];
   seven_day_plan: { day: number; action: string }[];
 }
@@ -47,14 +42,20 @@ export function MaintenanceAudit() {
   const [name, setName] = useState('');
   const [linkedin, setLinkedin] = useState('');
   const [twitter, setTwitter] = useState('');
+  const [instagram, setInstagram] = useState('');
+  const [tiktok, setTiktok] = useState('');
+  const [youtube, setYoutube] = useState('');
+  const [threads, setThreads] = useState('');
   const [auditResult, setAuditResult] = useState<AuditResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const hasAnySocial = linkedin || twitter || instagram || tiktok || youtube || threads;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || (!linkedin && !twitter)) {
-      setError('Please provide at least one social profile');
+    if (!email || !hasAnySocial) {
+      setError('Please provide email and at least one social profile');
       return;
     }
     
@@ -62,22 +63,23 @@ export function MaintenanceAudit() {
     setError('');
     
     try {
-      // Save lead
       await supabase.from('mfs_leads').insert({
         email,
         source: 'maintenance-audit',
-        metadata: { linkedin, twitter, name },
+        metadata: { linkedin, twitter, instagram, tiktok, youtube, threads, name },
       });
 
-      // Call audit function
       const response = await fetch('https://rzhpydydecvakrtwwxfl.supabase.co/functions/v1/maintenance-audit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email,
-          name,
+          email, name,
           linkedin_url: linkedin,
           twitter_username: twitter,
+          instagram_username: instagram,
+          tiktok_username: tiktok,
+          youtube_url: youtube,
+          threads_username: threads,
         }),
       });
 
@@ -106,6 +108,18 @@ export function MaintenanceAudit() {
     return 'Critical';
   };
 
+  const getPlatformColor = (platform: string) => {
+    const colors: Record<string, string> = {
+      twitter: 'bg-blue-500/20 text-blue-400',
+      linkedin: 'bg-blue-600/20 text-blue-400',
+      instagram: 'bg-pink-500/20 text-pink-400',
+      tiktok: 'bg-gray-500/20 text-white',
+      youtube: 'bg-red-500/20 text-red-400',
+      threads: 'bg-gray-600/20 text-gray-300',
+    };
+    return colors[platform] || 'bg-gray-500/20 text-gray-400';
+  };
+
   return (
     <div className="min-h-screen bg-[#0e0e0e]">
       {/* Navigation */}
@@ -115,7 +129,6 @@ export function MaintenanceAudit() {
           <div className="flex items-center gap-6">
             <Link to="/how-it-works" className="text-[#e0e0e0] hover:text-white transition-colors">How It Works</Link>
             <Link to="/maintenance-audit" className="text-white font-medium">Free Audit</Link>
-            <Link to="/faq" className="text-[#e0e0e0] hover:text-white transition-colors">FAQ</Link>
             <Link to="/pricing" className="text-[#e0e0e0] hover:text-white transition-colors">Pricing</Link>
             <Link to="/login" className="text-[#e0e0e0] hover:text-white transition-colors">Login</Link>
             <Link to="/signup" className="px-4 py-2 bg-white text-black font-medium rounded-lg hover:bg-gray-200 transition-colors">
@@ -126,7 +139,6 @@ export function MaintenanceAudit() {
       </nav>
 
       {auditResult ? (
-        /* Audit Results */
         <div className="px-6 py-12">
           <div className="max-w-3xl mx-auto">
             {/* Score Header */}
@@ -147,89 +159,62 @@ export function MaintenanceAudit() {
             </div>
 
             {/* Platform Analysis */}
-            <div className="grid md:grid-cols-2 gap-6 mb-12">
-              {auditResult.platforms.twitter && (
-                <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
-                      <span className="text-blue-400 font-bold">X</span>
+            <div className="grid md:grid-cols-2 gap-4 mb-12">
+              {Object.entries(auditResult.platforms).map(([key, platform]) => (
+                <div key={key} className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-5">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${getPlatformColor(key)}`}>
+                      <span className="font-bold text-sm">{platform.icon}</span>
                     </div>
-                    <div>
-                      <h3 className="text-white font-semibold">Twitter/X</h3>
-                      <p className="text-[#888] text-sm">@{auditResult.platforms.twitter.username}</p>
+                    <div className="flex-1">
+                      <h3 className="text-white font-semibold">{platform.platform}</h3>
+                      <p className="text-[#888] text-sm">@{platform.username}</p>
                     </div>
-                    <div className={`ml-auto text-2xl font-bold ${getScoreColor(auditResult.platforms.twitter.score)}`}>
-                      {auditResult.platforms.twitter.score}
+                    <div className={`text-2xl font-bold ${getScoreColor(platform.score)}`}>
+                      {platform.score}
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    {auditResult.platforms.twitter.issues.map((issue, i) => (
-                      <div key={i} className="flex items-start gap-2 text-sm">
-                        <AlertTriangle size={14} className="text-yellow-400 mt-0.5 flex-shrink-0" />
+                  <div className="space-y-1.5">
+                    {platform.issues.slice(0, 2).map((issue, i) => (
+                      <div key={i} className="flex items-start gap-2 text-xs">
+                        <AlertTriangle size={12} className="text-yellow-400 mt-0.5 flex-shrink-0" />
                         <span className="text-[#888]">{issue}</span>
                       </div>
                     ))}
                   </div>
                 </div>
-              )}
-              
-              {auditResult.platforms.linkedin && (
-                <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 bg-blue-600/20 rounded-lg flex items-center justify-center">
-                      <span className="text-blue-400 font-bold">in</span>
-                    </div>
-                    <div>
-                      <h3 className="text-white font-semibold">LinkedIn</h3>
-                      <p className="text-[#888] text-sm">Profile</p>
-                    </div>
-                    <div className={`ml-auto text-2xl font-bold ${getScoreColor(auditResult.platforms.linkedin.score)}`}>
-                      {auditResult.platforms.linkedin.score}
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    {auditResult.platforms.linkedin.issues.map((issue, i) => (
-                      <div key={i} className="flex items-start gap-2 text-sm">
-                        <AlertTriangle size={14} className="text-yellow-400 mt-0.5 flex-shrink-0" />
-                        <span className="text-[#888]">{issue}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+              ))}
             </div>
 
             {/* Recommendations */}
-            <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-6 mb-12">
+            <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-6 mb-8">
               <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
                 <FileText size={20} />
-                Recommendations
+                Top Recommendations
               </h3>
               <div className="space-y-3">
-                {auditResult.recommendations.map((rec, i) => (
+                {auditResult.recommendations.slice(0, 6).map((rec, i) => (
                   <div key={i} className="flex items-start gap-3">
                     <ArrowRight size={16} className="text-white mt-0.5 flex-shrink-0" />
-                    <span className="text-[#e0e0e0]">{rec}</span>
+                    <span className="text-[#e0e0e0] text-sm">{rec}</span>
                   </div>
                 ))}
               </div>
             </div>
 
             {/* 7-Day Plan */}
-            <div className="bg-gradient-to-br from-[#1a1a1a] to-[#0e0e0e] border border-[#2a2a2a] rounded-xl p-6 mb-12">
+            <div className="bg-gradient-to-br from-[#1a1a1a] to-[#0e0e0e] border border-[#2a2a2a] rounded-xl p-6 mb-8">
               <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
                 <Calendar size={20} />
                 Your 7-Day Maintenance Plan
               </h3>
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {auditResult.seven_day_plan.map(({ day, action }) => (
-                  <div key={day} className="flex gap-4 items-start">
-                    <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center flex-shrink-0">
-                      <span className="text-white text-sm font-bold">{day}</span>
+                  <div key={day} className="flex gap-3 items-start">
+                    <div className="w-7 h-7 bg-white/10 rounded-full flex items-center justify-center flex-shrink-0">
+                      <span className="text-white text-xs font-bold">{day}</span>
                     </div>
-                    <div className="pt-1">
-                      <span className="text-[#e0e0e0]">{action}</span>
-                    </div>
+                    <span className="text-[#e0e0e0] text-sm pt-0.5">{action}</span>
                   </div>
                 ))}
               </div>
@@ -239,14 +224,10 @@ export function MaintenanceAudit() {
             <div className="text-center bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-8">
               <h3 className="text-2xl font-bold text-white mb-2">Let Us Handle Your Maintenance</h3>
               <p className="text-[#888] mb-6">
-                Don't have time to execute this plan? KeepAlive does it all for you, running quietly in the background.
+                Don't have time to execute this plan? KeepAlive runs quietly in the background.
               </p>
-              <Link
-                to="/signup"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-white text-black font-semibold rounded-lg hover:bg-gray-200 transition-colors"
-              >
-                Start Free Trial
-                <ArrowRight size={18} />
+              <Link to="/signup" className="inline-flex items-center gap-2 px-6 py-3 bg-white text-black font-semibold rounded-lg hover:bg-gray-200 transition-colors">
+                Start Free Trial <ArrowRight size={18} />
               </Link>
             </div>
           </div>
@@ -254,7 +235,7 @@ export function MaintenanceAudit() {
       ) : (
         <>
           {/* Hero */}
-          <section className="px-6 py-20 text-center">
+          <section className="px-6 py-16 text-center">
             <div className="max-w-2xl mx-auto">
               <h1 className="text-4xl font-bold text-white mb-4">
                 Free Social Media Maintenance Audit
@@ -266,9 +247,9 @@ export function MaintenanceAudit() {
           </section>
 
           {/* What's Included */}
-          <section className="px-6 py-16 bg-[#1a1a1a]">
+          <section className="px-6 py-12 bg-[#1a1a1a]">
             <div className="max-w-4xl mx-auto">
-              <h2 className="text-2xl font-bold text-white text-center mb-12">
+              <h2 className="text-2xl font-bold text-white text-center mb-10">
                 What the Audit Includes
               </h2>
               <div className="grid md:grid-cols-3 gap-6">
@@ -287,12 +268,12 @@ export function MaintenanceAudit() {
 
           {/* Form */}
           <section className="px-6 py-16">
-            <div className="max-w-md mx-auto">
+            <div className="max-w-lg mx-auto">
               <h2 className="text-2xl font-bold text-white text-center mb-2">
                 Get Your Instant Audit
               </h2>
               <p className="text-[#666] text-center text-sm mb-8">
-                Results delivered immediately. No waiting.
+                Add any platforms you use. Results delivered immediately.
               </p>
               {error && (
                 <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 mb-4 text-red-400 text-sm text-center">
@@ -300,57 +281,68 @@ export function MaintenanceAudit() {
                 </div>
               )}
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-[#888] text-sm mb-2">Name</label>
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="w-full px-4 py-3 bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg text-white focus:outline-none focus:border-white/50"
-                    placeholder="Your name"
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[#888] text-sm mb-2">Name</label>
+                    <input type="text" value={name} onChange={(e) => setName(e.target.value)}
+                      className="w-full px-4 py-3 bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg text-white focus:outline-none focus:border-white/50"
+                      placeholder="Your name" />
+                  </div>
+                  <div>
+                    <label className="block text-[#888] text-sm mb-2">Email *</label>
+                    <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required
+                      className="w-full px-4 py-3 bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg text-white focus:outline-none focus:border-white/50"
+                      placeholder="you@company.com" />
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-[#888] text-sm mb-2">Email *</label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="w-full px-4 py-3 bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg text-white focus:outline-none focus:border-white/50"
-                    placeholder="you@company.com"
-                  />
+
+                <div className="pt-2">
+                  <p className="text-[#666] text-sm mb-3">Add your social profiles (at least one):</p>
                 </div>
-                <div>
-                  <label className="block text-[#888] text-sm mb-2">LinkedIn Profile URL</label>
-                  <input
-                    type="url"
-                    value={linkedin}
-                    onChange={(e) => setLinkedin(e.target.value)}
-                    className="w-full px-4 py-3 bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg text-white focus:outline-none focus:border-white/50"
-                    placeholder="https://linkedin.com/in/yourname"
-                  />
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[#888] text-sm mb-2">LinkedIn</label>
+                    <input type="url" value={linkedin} onChange={(e) => setLinkedin(e.target.value)}
+                      className="w-full px-4 py-3 bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg text-white focus:outline-none focus:border-white/50 text-sm"
+                      placeholder="linkedin.com/in/you" />
+                  </div>
+                  <div>
+                    <label className="block text-[#888] text-sm mb-2">Twitter/X</label>
+                    <input type="text" value={twitter} onChange={(e) => setTwitter(e.target.value)}
+                      className="w-full px-4 py-3 bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg text-white focus:outline-none focus:border-white/50 text-sm"
+                      placeholder="@handle" />
+                  </div>
+                  <div>
+                    <label className="block text-[#888] text-sm mb-2">Instagram</label>
+                    <input type="text" value={instagram} onChange={(e) => setInstagram(e.target.value)}
+                      className="w-full px-4 py-3 bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg text-white focus:outline-none focus:border-white/50 text-sm"
+                      placeholder="@handle" />
+                  </div>
+                  <div>
+                    <label className="block text-[#888] text-sm mb-2">TikTok</label>
+                    <input type="text" value={tiktok} onChange={(e) => setTiktok(e.target.value)}
+                      className="w-full px-4 py-3 bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg text-white focus:outline-none focus:border-white/50 text-sm"
+                      placeholder="@handle" />
+                  </div>
+                  <div>
+                    <label className="block text-[#888] text-sm mb-2">YouTube</label>
+                    <input type="url" value={youtube} onChange={(e) => setYoutube(e.target.value)}
+                      className="w-full px-4 py-3 bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg text-white focus:outline-none focus:border-white/50 text-sm"
+                      placeholder="youtube.com/@channel" />
+                  </div>
+                  <div>
+                    <label className="block text-[#888] text-sm mb-2">Threads</label>
+                    <input type="text" value={threads} onChange={(e) => setThreads(e.target.value)}
+                      className="w-full px-4 py-3 bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg text-white focus:outline-none focus:border-white/50 text-sm"
+                      placeholder="@handle" />
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-[#888] text-sm mb-2">Twitter/X Handle</label>
-                  <input
-                    type="text"
-                    value={twitter}
-                    onChange={(e) => setTwitter(e.target.value)}
-                    className="w-full px-4 py-3 bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg text-white focus:outline-none focus:border-white/50"
-                    placeholder="@yourhandle"
-                  />
-                </div>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full py-4 bg-white text-black font-semibold rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-                >
+
+                <button type="submit" disabled={loading || !hasAnySocial}
+                  className="w-full py-4 bg-white text-black font-semibold rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 mt-6">
                   {loading ? (
-                    <>
-                      <Loader2 size={20} className="animate-spin" />
-                      Generating Audit...
-                    </>
+                    <><Loader2 size={20} className="animate-spin" /> Generating Audit...</>
                   ) : (
                     'Get My Instant Audit'
                   )}
