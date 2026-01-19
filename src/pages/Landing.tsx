@@ -67,7 +67,7 @@ export function Landing() {
       {/* Relief Anchor */}
       <section className="px-6 py-12">
         <p className="text-[#e0e0e0] text-lg text-center max-w-2xl mx-auto">
-          Once this is on, promotion stops being something you remember to do.
+          Turn this on and stop worrying about staying visible.
         </p>
       </section>
 
@@ -89,6 +89,13 @@ export function Landing() {
             ))}
           </div>
         </div>
+      </section>
+
+      {/* Mid-page statement */}
+      <section className="px-6 py-12">
+        <p className="text-[#888] text-center">
+          Once it's running, promotion stops occupying space in your head.
+        </p>
       </section>
 
       {/* Social Proof */}
@@ -116,8 +123,8 @@ export function Landing() {
 
       {/* Boundary Statement */}
       <section className="px-6 py-12">
-        <p className="text-[#e0e0e0] text-center">
-          This is not a growth tool. It's a continuity tool.
+        <p className="text-[#888] text-center">
+          If you enjoy marketing, this probably isn't for you.
         </p>
       </section>
 
