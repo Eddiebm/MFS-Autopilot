@@ -15,6 +15,7 @@ import { HowItWorks } from './pages/HowItWorks';
 import { FAQ } from './pages/FAQ';
 import { Reports } from './pages/Reports';
 import { AdminAnalytics } from './pages/AdminAnalytics';
+import { MaintenanceAudit } from './pages/MaintenanceAudit';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -64,6 +65,7 @@ export default function App() {
           <Route path="/how-it-works" element={<HowItWorks />} />
           <Route path="/faq" element={<FAQ />} />
           <Route path="/capture" element={<Capture />} />
+          <Route path="/maintenance-audit" element={<MaintenanceAudit />} />
           <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/campaigns" element={<ProtectedRoute><Campaigns /></ProtectedRoute>} />
