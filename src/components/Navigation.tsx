@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { LayoutDashboard, Megaphone, Users, Settings, LogOut } from 'lucide-react';
+import { LayoutDashboard, Megaphone, Users, Settings, LogOut, BookOpen } from 'lucide-react';
 
 export function Navigation() {
   const { signOut } = useAuth();
@@ -37,6 +37,15 @@ export function Navigation() {
               </Link>
             );
           })}
+          <a
+            href="https://6cx3ecghbmzk.space.minimax.io"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 px-4 py-2 text-[#e0e0e0] hover:bg-white/10 hover:text-white rounded-lg transition-colors"
+          >
+            <BookOpen size={18} />
+            Free Book
+          </a>
           <button
             onClick={signOut}
             className="flex items-center gap-2 px-4 py-2 text-[#e0e0e0] hover:bg-white/10 hover:text-white rounded-lg transition-colors ml-2"

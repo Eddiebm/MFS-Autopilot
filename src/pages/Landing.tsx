@@ -31,6 +31,7 @@ export function Landing() {
             <a href="#what-it-handles" className="text-[#e0e0e0] hover:text-white transition-colors">What It Handles</a>
             <Link to="/faq" className="text-[#e0e0e0] hover:text-white transition-colors">FAQ</Link>
             <Link to="/pricing" className="text-[#e0e0e0] hover:text-white transition-colors">Pricing</Link>
+            <a href="https://6cx3ecghbmzk.space.minimax.io" target="_blank" rel="noopener noreferrer" className="text-[#e0e0e0] hover:text-white transition-colors">Free Book</a>
             <Link to="/login" className="text-[#e0e0e0] hover:text-white transition-colors">Login</Link>
             <Link to="/signup" className="px-4 py-2 bg-white text-black font-medium rounded-lg hover:bg-gray-200 transition-colors">
               Start Free
