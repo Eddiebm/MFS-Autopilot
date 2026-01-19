@@ -1,21 +1,21 @@
 import { Link } from 'react-router-dom';
-import { Zap, BarChart3, Clock, Users } from 'lucide-react';
+import { Pencil, Calendar, RefreshCw } from 'lucide-react';
 
-const features = [
+const outcomes = [
   {
-    icon: Zap,
-    title: 'AI-Powered Content',
-    description: 'Generate engaging posts tailored to your brand voice in seconds.',
+    icon: Pencil,
+    title: 'Posts are written without you',
+    description: 'Content happens in the background. You approve when convenient.',
   },
   {
-    icon: BarChart3,
-    title: 'Smart Analytics',
-    description: 'Track performance and optimize your strategy with real-time insights.',
+    icon: Calendar,
+    title: 'Your social presence continues while you work',
+    description: 'Campaigns run on schedule. Platforms stay active.',
   },
   {
-    icon: Clock,
-    title: 'Set It & Forget It',
-    description: 'Schedule weeks of content in advance across all your platforms.',
+    icon: RefreshCw,
+    title: 'The cycle keeps going',
+    description: 'New content queues up. Old tasks stop recurring.',
   },
 ];
 
@@ -27,7 +27,8 @@ export function Landing() {
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <Link to="/" className="text-xl font-bold text-white">MFS Autopilot</Link>
           <div className="flex items-center gap-6">
-            <a href="#features" className="text-[#e0e0e0] hover:text-white transition-colors">Features</a>
+            <Link to="/how-it-works" className="text-[#e0e0e0] hover:text-white transition-colors">How It Works</Link>
+            <a href="#what-it-handles" className="text-[#e0e0e0] hover:text-white transition-colors">What It Handles</a>
             <Link to="/pricing" className="text-[#e0e0e0] hover:text-white transition-colors">Pricing</Link>
             <Link to="/login" className="text-[#e0e0e0] hover:text-white transition-colors">Login</Link>
             <Link to="/signup" className="px-4 py-2 bg-white text-black font-medium rounded-lg hover:bg-gray-200 transition-colors">
@@ -44,7 +45,7 @@ export function Landing() {
             Marketing that runs without you pretending to enjoy it
           </h1>
           <p className="mt-6 text-[#e0e0e0] text-lg max-w-xl mx-auto">
-            AI-powered social media automation that handles the boring stuff so you can focus on what matters.
+            Social media handled quietly in the background, so you can work on what actually matters.
           </p>
           <div className="mt-10 flex items-center justify-center gap-4">
             <Link
@@ -63,14 +64,21 @@ export function Landing() {
         </div>
       </section>
 
-      {/* Features */}
-      <section id="features" className="px-6 py-16 bg-[#1a1a1a]">
+      {/* Relief Anchor */}
+      <section className="px-6 py-12">
+        <p className="text-[#e0e0e0] text-lg text-center max-w-2xl mx-auto">
+          Once this is on, promotion stops being something you remember to do.
+        </p>
+      </section>
+
+      {/* What It Handles */}
+      <section id="what-it-handles" className="px-6 py-16 bg-[#1a1a1a]">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl font-bold text-white text-center mb-12">
-            Everything You Need to Automate Your Marketing
+            What This Handles For You
           </h2>
           <div className="grid md:grid-cols-3 gap-8">
-            {features.map(({ icon: Icon, title, description }) => (
+            {outcomes.map(({ icon: Icon, title, description }) => (
               <div key={title} className="bg-[#0e0e0e] border border-[#2a2a2a] rounded-xl p-8 text-center">
                 <div className="w-14 h-14 bg-white/10 rounded-xl flex items-center justify-center mx-auto mb-4">
                   <Icon size={28} className="text-white" />
@@ -86,12 +94,8 @@ export function Landing() {
       {/* Social Proof */}
       <section className="px-6 py-16">
         <div className="max-w-4xl mx-auto text-center">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <Users size={24} className="text-white" />
-            <span className="text-2xl font-bold text-white">500+</span>
-          </div>
           <p className="text-[#e0e0e0] text-lg">
-            Join 500+ marketers who've reclaimed their time with MFS Autopilot
+            500+ founders have taken this off their plate.
           </p>
         </div>
       </section>
@@ -99,24 +103,31 @@ export function Landing() {
       {/* CTA */}
       <section className="px-6 py-16 bg-[#1a1a1a]">
         <div className="max-w-2xl mx-auto text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">Ready to Automate?</h2>
-          <p className="text-[#e0e0e0] mb-8">Start for free. No credit card required.</p>
+          <h2 className="text-2xl font-semibold text-white mb-4">One less thing to manage.</h2>
+          <p className="text-[#e0e0e0] mb-8">Start free. No credit card required.</p>
           <Link
             to="/signup"
             className="inline-block px-8 py-4 bg-white text-black font-semibold rounded-lg hover:bg-gray-200 transition-colors"
           >
-            Get Started Free
+            Get Started
           </Link>
         </div>
+      </section>
+
+      {/* Boundary Statement */}
+      <section className="px-6 py-12">
+        <p className="text-[#e0e0e0] text-center">
+          This is not a growth tool. It's a continuity tool.
+        </p>
       </section>
 
       {/* Footer */}
       <footer className="px-6 py-8 border-t border-[#2a2a2a]">
         <div className="max-w-6xl mx-auto flex items-center justify-between text-[#e0e0e0] text-sm">
-          <span>&copy; 2026 MFS Autopilot. All rights reserved.</span>
+          <span>&copy; 2026 MFS Autopilot</span>
           <div className="flex gap-6">
-            <a href="#" className="hover:text-white">Privacy Policy</a>
-            <a href="#" className="hover:text-white">Terms of Service</a>
+            <a href="#" className="hover:text-white">Privacy</a>
+            <a href="#" className="hover:text-white">Terms</a>
           </div>
         </div>
       </footer>
