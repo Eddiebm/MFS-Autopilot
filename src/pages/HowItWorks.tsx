@@ -9,6 +9,7 @@ const steps = [
     time: '30 seconds',
     description: 'Create your account with just an email.',
     whatYouSee: 'A simple form. No credit card. No hoops.',
+    link: '/signup',
   },
   {
     number: 2,
@@ -70,7 +71,7 @@ export function HowItWorks() {
       {/* Steps */}
       <section className="px-6 pb-20">
         <div className="max-w-3xl mx-auto space-y-8">
-          {steps.map(({ number, icon: Icon, title, time, description, whatYouSee }) => (
+          {steps.map(({ number, icon: Icon, title, time, description, whatYouSee, link }) => (
             <div
               key={number}
               className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl p-8 flex gap-6"
@@ -88,7 +89,11 @@ export function HowItWorks() {
               {/* Content */}
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
-                  <h3 className="text-xl font-semibold text-white">{title}</h3>
+                  {link ? (
+                    <Link to={link} className="text-xl font-semibold text-white hover:underline">{title} →</Link>
+                  ) : (
+                    <h3 className="text-xl font-semibold text-white">{title}</h3>
+                  )}
                   <span className="text-xs bg-white/10 text-[#e0e0e0] px-2 py-1 rounded-full">
                     {time}
                   </span>

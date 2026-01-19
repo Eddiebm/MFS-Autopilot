@@ -46,6 +46,20 @@ export function FAQ() {
         </div>
       </section>
 
+      {/* CTA */}
+      <section className="px-6 py-16 bg-[#1a1a1a]">
+        <div className="max-w-2xl mx-auto text-center">
+          <h2 className="text-2xl font-semibold text-white mb-4">Ready to get started?</h2>
+          <p className="text-[#e0e0e0] mb-8">Start free. No credit card required.</p>
+          <Link
+            to="/signup"
+            className="inline-block px-8 py-4 bg-white text-black font-semibold rounded-lg hover:bg-gray-200 transition-colors"
+          >
+            Sign Up Now
+          </Link>
+        </div>
+      </section>
+
       <footer className="px-6 py-8 border-t border-[#2a2a2a]">
         <div className="max-w-6xl mx-auto flex items-center justify-between text-[#e0e0e0] text-sm">
           <span>&copy; 2026 MFS Autopilot</span>
