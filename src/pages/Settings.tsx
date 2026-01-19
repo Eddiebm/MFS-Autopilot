@@ -3,15 +3,15 @@ import { Link } from 'react-router-dom';
 import { Navigation } from '../components/Navigation';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
-import { Link2, Check, Crown, ArrowUpRight } from 'lucide-react';
+import { Link2, Check, Crown, ArrowUpRight, X } from 'lucide-react';
 
 const platforms = [
-  { id: 'twitter', name: 'X (Twitter)', color: '#000000' },
-  { id: 'linkedin', name: 'LinkedIn', color: '#0A66C2' },
-  { id: 'facebook', name: 'Facebook', color: '#1877F2' },
-  { id: 'instagram', name: 'Instagram', color: '#E4405F' },
-  { id: 'tiktok', name: 'TikTok', color: '#000000' },
-  { id: 'bluesky', name: 'Bluesky', color: '#0085FF' },
+  { id: 'twitter', name: 'X (Twitter)', color: '#000000', oauth: true },
+  { id: 'linkedin', name: 'LinkedIn', color: '#0A66C2', oauth: true },
+  { id: 'facebook', name: 'Facebook', color: '#1877F2', oauth: true },
+  { id: 'instagram', name: 'Instagram', color: '#E4405F', oauth: true },
+  { id: 'tiktok', name: 'TikTok', color: '#000000', oauth: true },
+  { id: 'bluesky', name: 'Bluesky', color: '#0085FF', oauth: false },
 ];
 
 const planNames: Record<string, string> = {
@@ -23,36 +23,100 @@ const planNames: Record<string, string> = {
 
 export function Settings() {
   const { user } = useAuth();
-  const [connections, setConnections] = useState<Record<string, boolean>>({});
+  const [connections, setConnections] = useState<Record<string, any>>({});
   const [subscription, setSubscription] = useState<any>(null);
   const [toast, setToast] = useState('');
+  const [showBlueskyModal, setShowBlueskyModal] = useState(false);
+  const [blueskyHandle, setBlueskyHandle] = useState('');
+  const [blueskyAppPassword, setBlueskyAppPassword] = useState('');
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem('mfs_connections');
-    if (saved) setConnections(JSON.parse(saved));
-    
-    async function loadSubscription() {
-      if (!user) return;
-      const { data } = await supabase
-        .from('mfs_subscriptions')
-        .select('*, mfs_plans!price_id(plan_type, price, monthly_limit)')
-        .eq('user_id', user.id)
-        .eq('status', 'active')
-        .maybeSingle();
-      setSubscription(data);
+    async function loadData() {
+      // Load platform connections from database
+      if (user) {
+        const { data } = await supabase
+          .from('mfs_platform_connections')
+          .select('*')
+          .eq('user_id', user.id);
+        
+        const conns: Record<string, any> = {};
+        data?.forEach((c) => {
+          conns[c.platform] = { handle: c.handle, connected: true };
+        });
+        setConnections(conns);
+
+        // Load subscription
+        const { data: subData } = await supabase
+          .from('mfs_subscriptions')
+          .select('*, mfs_plans!price_id(plan_type, price, monthly_limit)')
+          .eq('user_id', user.id)
+          .eq('status', 'active')
+          .maybeSingle();
+        setSubscription(subData);
+      }
     }
-    loadSubscription();
+    loadData();
   }, [user]);
 
   function handleConnect(platformId: string) {
-    setToast('Coming Soon - OAuth integration will be available in a future update');
-    setTimeout(() => setToast(''), 3000);
+    if (platformId === 'bluesky') {
+      setShowBlueskyModal(true);
+    } else {
+      setToast('Coming Soon - OAuth integration for this platform will be available soon');
+      setTimeout(() => setToast(''), 3000);
+    }
   }
 
-  function handleDisconnect(platformId: string) {
-    const updated = { ...connections, [platformId]: false };
+  async function handleBlueskyConnect() {
+    if (!blueskyHandle || !blueskyAppPassword || !user) return;
+    setSaving(true);
+
+    try {
+      // Test the credentials first
+      const testRes = await fetch('https://bsky.social/xrpc/com.atproto.server.createSession', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identifier: blueskyHandle, password: blueskyAppPassword }),
+      });
+
+      if (!testRes.ok) {
+        setToast('Invalid Bluesky credentials. Please check your handle and app password.');
+        setSaving(false);
+        return;
+      }
+
+      // Save to database (credentials stored encrypted via Supabase)
+      const { error } = await supabase.from('mfs_platform_connections').upsert({
+        user_id: user.id,
+        platform: 'bluesky',
+        handle: blueskyHandle,
+        credentials: { appPassword: blueskyAppPassword },
+      }, { onConflict: 'user_id,platform' });
+
+      if (error) throw error;
+
+      setConnections({ ...connections, bluesky: { handle: blueskyHandle, connected: true } });
+      setShowBlueskyModal(false);
+      setBlueskyHandle('');
+      setBlueskyAppPassword('');
+      setToast('Bluesky connected successfully!');
+      setTimeout(() => setToast(''), 3000);
+    } catch (err: any) {
+      setToast(err.message || 'Failed to connect Bluesky');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleDisconnect(platformId: string) {
+    if (!user) return;
+    await supabase.from('mfs_platform_connections').delete().eq('user_id', user.id).eq('platform', platformId);
+    const updated = { ...connections };
+    delete updated[platformId];
     setConnections(updated);
-    localStorage.setItem('mfs_connections', JSON.stringify(updated));
+    setToast('Disconnected successfully');
+    setTimeout(() => setToast(''), 2000);
   }
 
   const currentPlan = subscription?.mfs_plans?.plan_type || 'free';
@@ -102,11 +166,13 @@ export function Settings() {
                   <div>
                     <h3 className="text-white font-medium">{platform.name}</h3>
                     <p className="text-[#e0e0e0] text-sm">
-                      {connections[platform.id] ? 'Connected' : 'Not connected'}
+                      {connections[platform.id]?.connected 
+                        ? `Connected as @${connections[platform.id].handle}` 
+                        : 'Not connected'}
                     </p>
                   </div>
                 </div>
-                {connections[platform.id] ? (
+                {connections[platform.id]?.connected ? (
                   <button
                     onClick={() => handleDisconnect(platform.id)}
                     className="px-4 py-2 border border-[#2a2a2a] text-[#e0e0e0] rounded-lg hover:bg-white/5 transition-colors text-sm"
@@ -144,6 +210,52 @@ export function Settings() {
           </button>
         </div>
       </main>
+
+      {/* Bluesky Connect Modal */}
+      {showBlueskyModal && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+          <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl w-full max-w-md">
+            <div className="flex items-center justify-between p-6 border-b border-[#2a2a2a]">
+              <h2 className="text-lg font-semibold text-white">Connect Bluesky</h2>
+              <button onClick={() => setShowBlueskyModal(false)} className="text-gray-400 hover:text-white">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-[#e0e0e0] text-sm mb-2">Bluesky Handle</label>
+                <input
+                  type="text"
+                  value={blueskyHandle}
+                  onChange={(e) => setBlueskyHandle(e.target.value)}
+                  placeholder="yourhandle.bsky.social"
+                  className="w-full px-4 py-3 bg-[#0e0e0e] border border-[#2a2a2a] rounded-lg text-white focus:outline-none focus:border-white"
+                />
+              </div>
+              <div>
+                <label className="block text-[#e0e0e0] text-sm mb-2">App Password</label>
+                <input
+                  type="password"
+                  value={blueskyAppPassword}
+                  onChange={(e) => setBlueskyAppPassword(e.target.value)}
+                  placeholder="xxxx-xxxx-xxxx-xxxx"
+                  className="w-full px-4 py-3 bg-[#0e0e0e] border border-[#2a2a2a] rounded-lg text-white focus:outline-none focus:border-white"
+                />
+                <p className="text-gray-500 text-xs mt-2">
+                  Create an app password at Settings → Privacy → App Passwords on Bluesky
+                </p>
+              </div>
+              <button
+                onClick={handleBlueskyConnect}
+                disabled={saving || !blueskyHandle || !blueskyAppPassword}
+                className="w-full py-3 bg-white text-black font-semibold rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50"
+              >
+                {saving ? 'Connecting...' : 'Connect Bluesky'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {toast && (
         <div className="fixed bottom-6 right-6 bg-[#1a1a1a] border border-[#2a2a2a] text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2">

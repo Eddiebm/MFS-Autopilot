@@ -132,7 +132,7 @@ export function Landing() {
       {/* Quiet link */}
       <section className="px-6 py-8">
         <p className="text-center">
-          <a href="https://7xilv31vak25.space.minimax.io" className="text-[#666] text-sm hover:underline" aria-label="A very small book about not disappearing">
+          <a href="https://7xilv31vak25.space.minimax.io" target="_blank" rel="noopener noreferrer" className="text-gray-400 text-sm hover:underline" aria-label="A very small book about not disappearing">
             How Things Get Noticed
           </a>
         </p>

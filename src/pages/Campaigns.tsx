@@ -131,31 +131,55 @@ export function Campaigns() {
       campaignDuration: form.campaignDuration,
     };
 
-    if (editingId) {
-      await supabase.from('mfs_campaigns').update({
-        name: form.name,
-        objective: form.objective,
-        details: details,
-      }).eq('id', editingId);
-    } else {
-      const { data: tenants } = await supabase.from('mfs_tenants').select('id').limit(1);
-      let tenantId = tenants?.[0]?.id;
-      if (!tenantId) {
-        const { data: newTenant } = await supabase.from('mfs_tenants').insert({ brand_name: form.brandName || 'My Brand' }).select().single();
-        tenantId = newTenant?.id;
+    try {
+      if (editingId) {
+        const { error } = await supabase.from('mfs_campaigns').update({
+          name: form.name,
+          objective: form.objective,
+          details: details,
+        }).eq('id', editingId);
+        if (error) {
+          console.error('Update error:', error);
+          alert(`Failed to update: ${error.message}`);
+          setSaving(false);
+          return;
+        }
+      } else {
+        const { data: tenants } = await supabase.from('mfs_tenants').select('id').limit(1);
+        let tenantId = tenants?.[0]?.id;
+        if (!tenantId) {
+          const { data: newTenant, error: tenantError } = await supabase.from('mfs_tenants').insert({ brand_name: form.brandName || 'My Brand' }).select().single();
+          if (tenantError) {
+            console.error('Tenant error:', tenantError);
+            alert(`Failed to create tenant: ${tenantError.message}`);
+            setSaving(false);
+            return;
+          }
+          tenantId = newTenant?.id;
+        }
+        const { error } = await supabase.from('mfs_campaigns').insert({
+          tenant_id: tenantId,
+          name: form.name,
+          objective: form.objective,
+          details: details,
+          status: 'active',
+        });
+        if (error) {
+          console.error('Insert error:', error);
+          alert(`Failed to create campaign: ${error.message}`);
+          setSaving(false);
+          return;
+        }
       }
-      await supabase.from('mfs_campaigns').insert({
-        tenant_id: tenantId,
-        name: form.name,
-        objective: form.objective,
-        details: details,
-        status: 'active',
-      });
-    }
 
-    closeModal();
-    setSaving(false);
-    loadCampaigns();
+      closeModal();
+      loadCampaigns();
+    } catch (err) {
+      console.error('Unexpected error:', err);
+      alert('An unexpected error occurred');
+    } finally {
+      setSaving(false);
+    }
   }
 
   const inputClass = "w-full px-4 py-3 bg-[#0e0e0e] border border-[#2a2a2a] rounded-lg text-white focus:outline-none focus:border-white";
