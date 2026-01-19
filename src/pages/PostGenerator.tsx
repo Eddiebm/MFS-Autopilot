@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Navigation } from '../components/Navigation';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
-import { Sparkles, ArrowLeft, Copy, Check, Send, Image } from 'lucide-react';
+import { Sparkles, ArrowLeft, Copy, Check, Send, Image, Loader2, Lightbulb, DollarSign } from 'lucide-react';
 
 const platforms = ['X', 'LinkedIn', 'Facebook', 'Instagram', 'TikTok', 'Bluesky'];
 const aiProviders = [
@@ -83,7 +83,19 @@ export function PostGenerator() {
         setPosts([data.data, ...posts]);
       }
     } catch (err: any) {
-      setError(err.message || 'Failed to generate post');
+      // Parse error for user-friendly messages
+      const msg = err.message || '';
+      if (msg.includes('429') || msg.toLowerCase().includes('rate limit')) {
+        setError('API rate limit reached. Please wait a moment and try again.');
+      } else if (msg.includes('401') || msg.includes('403') || msg.toLowerCase().includes('unauthorized')) {
+        setError('API key issue. Check your API settings and try again.');
+      } else if (msg.includes('500') || msg.toLowerCase().includes('server error')) {
+        setError('Server error. Please try again in a few moments.');
+      } else if (msg.includes('non-2xx')) {
+        setError('Generation failed. Please check your settings and try again.');
+      } else {
+        setError(msg || 'Failed to generate post');
+      }
     } finally {
       setGenerating(false);
     }
@@ -198,15 +210,36 @@ export function PostGenerator() {
               disabled={generating}
               className="flex items-center justify-center gap-2 w-full py-3 bg-white text-black font-semibold rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50"
             >
-              <Sparkles size={18} />
-              {generating ? 'Generating...' : 'Generate Post'}
+              {generating ? (
+                <>
+                  <Loader2 size={18} className="animate-spin" />
+                  Generating your post...
+                </>
+              ) : (
+                <>
+                  <Sparkles size={18} />
+                  Generate Post
+                </>
+              )}
             </button>
           </form>
         </div>
 
         <h2 className="text-lg font-semibold text-white mb-4">Generated Posts</h2>
         {posts.length === 0 ? (
-          <p className="text-gray-400">No posts yet. Generate your first post above.</p>
+          <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-8 text-center">
+            <div className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Lightbulb size={24} className="text-yellow-400" />
+            </div>
+            <h3 className="text-white font-semibold mb-2">Ready to create your first post?</h3>
+            <p className="text-gray-400 mb-4 max-w-md mx-auto">
+              Enter your brand name above and click Generate. Our AI will craft a platform-optimized post tailored to your campaign goals.
+            </p>
+            <div className="flex flex-wrap justify-center gap-2 text-xs">
+              <span className="px-3 py-1 bg-white/5 text-gray-400 rounded-full">Tip: Try different AI providers</span>
+              <span className="px-3 py-1 bg-white/5 text-gray-400 rounded-full">Tip: Enable image generation for visual posts</span>
+            </div>
+          </div>
         ) : (
           <div className="space-y-4">
             {posts.map((post) => (

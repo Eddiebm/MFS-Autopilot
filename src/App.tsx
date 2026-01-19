@@ -13,6 +13,8 @@ import { PostGenerator } from './pages/PostGenerator';
 import { Capture } from './pages/Capture';
 import { HowItWorks } from './pages/HowItWorks';
 import { FAQ } from './pages/FAQ';
+import { Reports } from './pages/Reports';
+import { AdminAnalytics } from './pages/AdminAnalytics';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -66,6 +68,8 @@ export default function App() {
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/campaigns" element={<ProtectedRoute><Campaigns /></ProtectedRoute>} />
           <Route path="/leads" element={<ProtectedRoute><Leads /></ProtectedRoute>} />
+          <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
+          <Route path="/admin" element={<ProtectedRoute><AdminAnalytics /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
           <Route path="/generate/:campaignId" element={<ProtectedRoute><PostGenerator /></ProtectedRoute>} />
         </Routes>

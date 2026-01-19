@@ -5,10 +5,13 @@ import { supabase } from '../lib/supabase';
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  isAdmin: boolean;
   signIn: (email: string, password: string) => Promise<any>;
   signUp: (email: string, password: string) => Promise<any>;
   signOut: () => Promise<void>;
 }
+
+const ADMIN_EMAILS = ['Mfs@bannermanmenson.com', 'eddie@bannermanmenson.com'];
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -48,8 +51,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
   }
 
+  const isAdmin = user?.email ? ADMIN_EMAILS.includes(user.email) : false;
+
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ user, loading, isAdmin, signIn, signUp, signOut }}>
       {children}
     </AuthContext.Provider>
   );

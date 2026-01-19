@@ -242,7 +242,16 @@ export function Settings() {
                   className="w-full px-4 py-3 bg-[#0e0e0e] border border-[#2a2a2a] rounded-lg text-white focus:outline-none focus:border-white"
                 />
                 <p className="text-gray-500 text-xs mt-2">
-                  Create an app password at Settings → Privacy → App Passwords on Bluesky
+                  App Passwords let you connect without sharing your main password.{' '}
+                  <a 
+                    href="https://bsky.app/settings/app-passwords" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-[#0085FF] hover:underline"
+                  >
+                    Create one here
+                  </a>
+                  {' '}(Settings → Privacy → App Passwords)
                 </p>
               </div>
               <button

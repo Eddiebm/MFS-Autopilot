@@ -1,14 +1,15 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { LayoutDashboard, Megaphone, Users, Settings, LogOut, BookOpen } from 'lucide-react';
+import { LayoutDashboard, Megaphone, Users, Settings, LogOut, BookOpen, BarChart3, Shield } from 'lucide-react';
 
 export function Navigation() {
-  const { signOut } = useAuth();
+  const { signOut, isAdmin } = useAuth();
   const location = useLocation();
 
   const links = [
     { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { to: '/campaigns', label: 'Campaigns', icon: Megaphone },
+    { to: '/reports', label: 'Reports', icon: BarChart3 },
     { to: '/leads', label: 'Leads', icon: Users },
     { to: '/settings', label: 'Settings', icon: Settings },
   ];
@@ -37,6 +38,19 @@ export function Navigation() {
               </Link>
             );
           })}
+          {isAdmin && (
+            <Link
+              to="/admin"
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                location.pathname === '/admin'
+                  ? 'bg-red-500 text-white font-medium'
+                  : 'text-red-400 hover:bg-red-500/20 hover:text-red-300'
+              }`}
+            >
+              <Shield size={18} />
+              Admin
+            </Link>
+          )}
           <a
             href="https://6cx3ecghbmzk.space.minimax.io"
             target="_blank"
