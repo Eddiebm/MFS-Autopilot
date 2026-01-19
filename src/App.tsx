@@ -12,6 +12,7 @@ import { Settings } from './pages/Settings';
 import { PostGenerator } from './pages/PostGenerator';
 import { Capture } from './pages/Capture';
 import { HowItWorks } from './pages/HowItWorks';
+import { FAQ } from './pages/FAQ';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -59,6 +60,7 @@ export default function App() {
           <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/how-it-works" element={<HowItWorks />} />
+          <Route path="/faq" element={<FAQ />} />
           <Route path="/capture" element={<Capture />} />
           <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />

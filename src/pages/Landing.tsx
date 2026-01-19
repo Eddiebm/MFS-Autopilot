@@ -29,6 +29,7 @@ export function Landing() {
           <div className="flex items-center gap-6">
             <Link to="/how-it-works" className="text-[#e0e0e0] hover:text-white transition-colors">How It Works</Link>
             <a href="#what-it-handles" className="text-[#e0e0e0] hover:text-white transition-colors">What It Handles</a>
+            <Link to="/faq" className="text-[#e0e0e0] hover:text-white transition-colors">FAQ</Link>
             <Link to="/pricing" className="text-[#e0e0e0] hover:text-white transition-colors">Pricing</Link>
             <Link to="/login" className="text-[#e0e0e0] hover:text-white transition-colors">Login</Link>
             <Link to="/signup" className="px-4 py-2 bg-white text-black font-medium rounded-lg hover:bg-gray-200 transition-colors">
@@ -125,6 +126,15 @@ export function Landing() {
       <section className="px-6 py-12">
         <p className="text-[#888] text-center">
           If you enjoy marketing, this probably isn't for you.
+        </p>
+      </section>
+
+      {/* Quiet link */}
+      <section className="px-6 py-8">
+        <p className="text-center">
+          <a href="https://7xilv31vak25.space.minimax.io" className="text-[#666] text-sm hover:underline" aria-label="A very small book about not disappearing">
+            How Things Get Noticed
+          </a>
         </p>
       </section>
 

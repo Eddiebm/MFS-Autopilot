@@ -45,6 +45,7 @@ export function HowItWorks() {
           <Link to="/" className="text-xl font-bold text-white">MFS Autopilot</Link>
           <div className="flex items-center gap-6">
             <Link to="/how-it-works" className="text-white font-medium">How It Works</Link>
+            <Link to="/faq" className="text-[#e0e0e0] hover:text-white transition-colors">FAQ</Link>
             <Link to="/pricing" className="text-[#e0e0e0] hover:text-white transition-colors">Pricing</Link>
             <Link to="/login" className="text-[#e0e0e0] hover:text-white transition-colors">Login</Link>
             <Link to="/signup" className="px-4 py-2 bg-white text-black font-medium rounded-lg hover:bg-gray-200 transition-colors">
