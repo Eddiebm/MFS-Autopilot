@@ -1,8 +1,21 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Check, X, Zap, HelpCircle } from 'lucide-react';
+import { Check, X, Zap, Info } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
+
+// Tooltip component
+function Tooltip({ children, text }: { children: React.ReactNode; text: string }) {
+  return (
+    <span className="group relative inline-flex items-center">
+      {children}
+      <span className="invisible group-hover:visible absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-[#2a2a2a] text-[#e0e0e0] text-xs rounded-lg shadow-lg z-10 text-center">
+        {text}
+        <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-[#2a2a2a]"></span>
+      </span>
+    </span>
+  );
+}
 
 const plans = [
   {
@@ -12,14 +25,12 @@ const plans = [
     annualPrice: 0,
     description: 'Short trial to experience automation-first social media maintenance.',
     features: [
-      '1 platform',
-      'Automation-only posting',
-      'Mandatory approval before publish',
+      { text: '1 platform', tooltip: null },
+      { text: 'Automation-only posting', tooltip: 'Posts are generated and scheduled automatically. You approve everything before it publishes.' },
+      { text: 'Mandatory approval', tooltip: 'Nothing goes live unless you approve it first.' },
     ],
-    exclusions: [
-      'No human review',
-      'Trial-limited access',
-    ],
+    exclusions: ['No human review', 'Trial-limited access'],
+    footnote: 'This is a short trial to experience maintenance, not a free long-term plan.',
     cta: 'Start Trial',
     popular: false,
   },
@@ -30,18 +41,14 @@ const plans = [
     annualPrice: 399,
     description: 'Minimal social media maintenance to stay visible.',
     features: [
-      '1 platform (LinkedIn or X)',
-      'Low posting cadence (1–2 posts/week)',
-      'Automation-first generation & scheduling',
-      'Mandatory approval queue',
+      { text: '1 platform (LinkedIn or X)', tooltip: 'Choose either LinkedIn or X. Multi-platform coverage requires Core Maintenance.' },
+      { text: '1–2 posts/week', tooltip: 'Low, steady cadence designed to maintain visibility without overposting.' },
+      { text: 'Automation-first scheduling', tooltip: null },
+      { text: 'Mandatory approval queue', tooltip: null },
     ],
-    exclusions: [
-      'No multi-platform coverage',
-      'No evergreen queue',
-      'No priority scheduling',
-      'No human review',
-    ],
-    cta: 'Choose Light Maintenance',
+    exclusions: ['No evergreen queue', 'No priority scheduling', 'No human review'],
+    footnote: 'Best for founders who want basic uptime without full coverage.',
+    cta: 'Choose Light',
     popular: false,
   },
   {
@@ -49,17 +56,17 @@ const plans = [
     name: 'Core Maintenance',
     monthlyPrice: 79,
     annualPrice: 790,
-    description: 'Ongoing social media maintenance for founders who want consistent presence with minimal involvement.',
+    description: 'Consistent presence with minimal involvement.',
     features: [
-      '2 platforms (LinkedIn + X)',
-      'Consistent weekly posting cadence',
-      'Evergreen maintenance queue',
-      'Priority scheduling',
-      'Mandatory approval queue',
+      { text: '2 platforms (LinkedIn + X)', tooltip: 'Maintain presence on LinkedIn and X simultaneously.' },
+      { text: 'Weekly posting cadence', tooltip: null },
+      { text: 'Evergreen queue', tooltip: 'Background content rotation that prevents gaps when you\'re busy.' },
+      { text: 'Priority scheduling', tooltip: null },
+      { text: 'Human review (add-on)', tooltip: 'Optional, paid quality check for sensitive posts. Not required for routine maintenance.' },
     ],
     exclusions: [],
-    addon: 'Human review available on request (paid add-on)',
-    cta: 'Choose Core Maintenance',
+    footnote: 'This is the plan most founders choose for consistent, low-effort presence.',
+    cta: 'Choose Core',
     popular: true,
   },
   {
@@ -67,16 +74,17 @@ const plans = [
     name: 'Full Maintenance',
     monthlyPrice: 149,
     annualPrice: 1490,
-    description: 'Maximum coverage and safety for founders who want zero day-to-day involvement.',
+    description: 'Maximum coverage for zero day-to-day involvement.',
     features: [
-      'Multi-platform maintenance',
-      'Higher posting cadence',
-      'Evergreen queue',
-      'Priority scheduling',
-      'Human review available on request (soft-capped)',
+      { text: 'Multi-platform', tooltip: 'Coverage across all supported platforms without manual coordination.' },
+      { text: 'Higher posting cadence', tooltip: null },
+      { text: 'Evergreen queue', tooltip: null },
+      { text: 'Priority scheduling', tooltip: null },
+      { text: 'Human review (soft-capped)', tooltip: 'Human review is available within reasonable use limits. This is not unlimited editorial service.' },
     ],
     exclusions: [],
-    cta: 'Choose Full Maintenance',
+    footnote: 'For founders who want maximum peace of mind and minimal involvement.',
+    cta: 'Choose Full',
     popular: false,
   },
 ];
@@ -157,7 +165,7 @@ export function Pricing() {
           {plans.map((plan) => (
             <div
               key={plan.id}
-              className={`relative bg-[#1a1a1a] border rounded-xl p-6 flex flex-col ${plan.popular ? 'border-white ring-1 ring-white' : 'border-[#2a2a2a]'}`}
+              className={`relative bg-[#1a1a1a] border rounded-xl p-5 flex flex-col ${plan.popular ? 'border-white ring-1 ring-white' : 'border-[#2a2a2a]'}`}
             >
               {plan.popular && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-white text-black text-xs font-semibold rounded-full flex items-center gap-1">
@@ -165,34 +173,35 @@ export function Pricing() {
                 </div>
               )}
               <h3 className="text-lg font-bold text-white mb-1">{plan.name}</h3>
-              <div className="mb-3">
+              <div className="mb-2">
                 <span className="text-3xl font-bold text-white">
                   ${annual ? plan.annualPrice : plan.monthlyPrice}
                 </span>
                 <span className="text-[#888] text-sm">/{annual ? 'year' : 'mo'}</span>
               </div>
-              <p className="text-[#888] text-sm mb-4 leading-relaxed">{plan.description}</p>
+              <p className="text-[#888] text-xs mb-4 leading-relaxed">{plan.description}</p>
               
-              <ul className="space-y-2 mb-4 flex-1">
+              <ul className="space-y-2 mb-3 flex-1">
                 {plan.features.map((feature) => (
-                  <li key={feature} className="flex items-start gap-2 text-[#e0e0e0] text-sm">
+                  <li key={feature.text} className="flex items-start gap-2 text-[#e0e0e0] text-sm">
                     <Check size={14} className="text-green-400 flex-shrink-0 mt-0.5" />
-                    <span>{feature}</span>
+                    <span className="flex items-center gap-1">
+                      {feature.text}
+                      {feature.tooltip && (
+                        <Tooltip text={feature.tooltip}>
+                          <Info size={12} className="text-[#666] cursor-help" />
+                        </Tooltip>
+                      )}
+                    </span>
                   </li>
                 ))}
-                {plan.addon && (
-                  <li className="flex items-start gap-2 text-[#888] text-sm mt-3 pt-3 border-t border-[#2a2a2a]">
-                    <HelpCircle size={14} className="text-[#666] flex-shrink-0 mt-0.5" />
-                    <span>{plan.addon}</span>
-                  </li>
-                )}
               </ul>
 
               {plan.exclusions.length > 0 && (
-                <ul className="space-y-1.5 mb-4 pt-3 border-t border-[#2a2a2a]">
+                <ul className="space-y-1 mb-3 pt-2 border-t border-[#2a2a2a]">
                   {plan.exclusions.map((exclusion) => (
-                    <li key={exclusion} className="flex items-start gap-2 text-[#666] text-xs">
-                      <X size={12} className="text-[#555] flex-shrink-0 mt-0.5" />
+                    <li key={exclusion} className="flex items-start gap-2 text-[#555] text-xs">
+                      <X size={10} className="flex-shrink-0 mt-0.5" />
                       <span>{exclusion}</span>
                     </li>
                   ))}
@@ -202,7 +211,7 @@ export function Pricing() {
               <button
                 onClick={() => handleSubscribe(plan.id)}
                 disabled={loading === plan.id}
-                className={`w-full py-3 rounded-lg font-semibold text-sm transition-colors ${
+                className={`w-full py-2.5 rounded-lg font-semibold text-sm transition-colors ${
                   plan.popular
                     ? 'bg-white text-black hover:bg-gray-200'
                     : 'bg-white/10 text-white hover:bg-white/20'
@@ -210,33 +219,52 @@ export function Pricing() {
               >
                 {loading === plan.id ? 'Loading...' : plan.cta}
               </button>
+
+              {/* Footnote */}
+              <p className="text-[#555] text-[10px] mt-3 text-center leading-tight">{plan.footnote}</p>
             </div>
           ))}
         </div>
 
         {/* Human Review Add-on */}
         <div className="mt-12 max-w-xl mx-auto">
-          <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-6">
-            <h3 className="text-lg font-bold text-white mb-2">Human Review (On Request)</h3>
-            <p className="text-[#888] text-sm mb-4">
-              Optional quality and brand-safety review for sensitive posts. Not required for routine maintenance.
+          <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-5">
+            <div className="flex items-center gap-2 mb-2">
+              <h3 className="text-base font-bold text-white">Human Review (On Request)</h3>
+              <Tooltip text="Human review is only performed when you explicitly ask for it.">
+                <Info size={14} className="text-[#666] cursor-help" />
+              </Tooltip>
+            </div>
+            <p className="text-[#888] text-sm mb-3">
+              Optional quality and brand-safety review for sensitive posts.
+              <Tooltip text="Clarity, tone, and brand safety — not strategy or performance.">
+                <Info size={12} className="text-[#666] cursor-help ml-1 inline" />
+              </Tooltip>
             </p>
-            <div className="flex items-center gap-6 text-sm">
+            <div className="flex items-center gap-6 text-sm mb-3">
               <div className="text-[#e0e0e0]">
                 <span className="font-semibold text-white">$15</span> per request
               </div>
-              <div className="text-[#888]">or</div>
+              <div className="text-[#666]">or</div>
               <div className="text-[#e0e0e0]">
-                <span className="font-semibold text-white">Monthly bundle</span> (clearly capped)
+                <span className="font-semibold text-white">Monthly bundle</span> (capped)
               </div>
             </div>
+            <p className="text-[#555] text-[10px]">Most routine posts do not require human review.</p>
           </div>
         </div>
 
+        {/* Checkout notes */}
+        <div className="mt-10 flex justify-center gap-8 text-[#666] text-xs">
+          <span>✓ Cancel anytime</span>
+          <span>✓ You control what publishes</span>
+          <span>✓ Human review is optional</span>
+        </div>
+
         {/* Disclaimer */}
-        <div className="mt-16 text-center">
-          <p className="text-[#666] text-sm max-w-2xl mx-auto">
-            KeepAlive provides automation-first social media maintenance. We do not promise growth, leads, or performance outcomes.
+        <div className="mt-12 text-center">
+          <p className="text-[#555] text-xs max-w-2xl mx-auto leading-relaxed">
+            KeepAlive provides automation-first social media maintenance. We do not promise growth, reach, engagement, or leads. Human review is optional and only provided when explicitly requested.
           </p>
         </div>
       </main>
