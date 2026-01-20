@@ -308,7 +308,7 @@ export function MaintenanceAudit() {
                       placeholder="linkedin.com/in/you" />
                   </div>
                   <div>
-                    <label className="block text-[#888] text-sm mb-2">Twitter/X</label>
+                    <label className="block text-[#888] text-sm mb-2">X</label>
                     <input type="text" value={twitter} onChange={(e) => setTwitter(e.target.value)}
                       className="w-full px-4 py-3 bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg text-white focus:outline-none focus:border-white/50 text-sm"
                       placeholder="@handle" />
