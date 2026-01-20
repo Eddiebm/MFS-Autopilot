@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
-import { CheckCircle, AlertTriangle, FileText, Shield, Calendar, ArrowRight, Loader2 } from 'lucide-react';
+import { CheckCircle, AlertTriangle, FileText, Shield, Calendar, ArrowRight, Loader2, HelpCircle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 const auditIncludes = [
@@ -156,10 +156,48 @@ export function MaintenanceAudit() {
                   {getScoreLabel(auditResult.overall_score)}
                 </div>
               </div>
+
+              {/* Score Legend */}
+              <div className="mt-6 flex justify-center gap-6 text-xs">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-green-400"></div>
+                  <span className="text-[#888]">70-100: Good</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
+                  <span className="text-[#888]">50-69: Needs Attention</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-red-400"></div>
+                  <span className="text-[#888]">0-49: Critical</span>
+                </div>
+              </div>
+            </div>
+
+            {/* How We Score */}
+            <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-5 mb-8">
+              <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
+                <HelpCircle size={16} />
+                How We Calculate Your Score
+              </h3>
+              <div className="grid md:grid-cols-3 gap-4 text-sm">
+                <div>
+                  <div className="text-white font-medium mb-1">Posting Consistency</div>
+                  <p className="text-[#888] text-xs">Regular posting (3-5x/week) significantly boosts visibility and algorithmic favor.</p>
+                </div>
+                <div>
+                  <div className="text-white font-medium mb-1">Profile Completeness</div>
+                  <p className="text-[#888] text-xs">Clear bio, headline, and pinned content help visitors understand your value.</p>
+                </div>
+                <div>
+                  <div className="text-white font-medium mb-1">Engagement Responsiveness</div>
+                  <p className="text-[#888] text-xs">Replying to comments within 24 hours signals activity to algorithms.</p>
+                </div>
+              </div>
             </div>
 
             {/* Platform Analysis */}
-            <div className="grid md:grid-cols-2 gap-4 mb-12">
+            <div className="grid md:grid-cols-2 gap-4 mb-8">
               {Object.entries(auditResult.platforms).map(([key, platform]) => (
                 <div key={key} className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-5">
                   <div className="flex items-center gap-3 mb-3">
